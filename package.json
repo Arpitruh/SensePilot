@@ -4,9 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "start": "electron .",
+    "check": "node --check src/main.cjs && node --check src/preload.cjs && node --check src/ui/renderer.js"
   },
   "engines": {
     "node": ">=22"
+  },
+  "main": "src/main.cjs",
+  "devDependencies": {
+    "electron": "^42.0.0"
   }
 }
