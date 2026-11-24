@@ -24,3 +24,7 @@ async function checkRuntime(){
  }catch{runtimeStatus.textContent='Dependency check failed. Try again.';}finally{runtimeBusy=false;runtimeCheck.disabled=false;}
 }
 runtimeCheck.addEventListener('click',checkRuntime);checkRuntime();
+
+const exportsConfig=[['summary',result,el('export-summary'),el('export-summary-status')],['analysis',fileResult,el('export-analysis'),el('export-analysis-status')]];
+for(const [kind,output,button,message] of exportsConfig){let exporting=false;const update=()=>{button.disabled=exporting||!output.textContent.trim()||(kind==='summary'&&output.textContent==='Your summary will appear here.');};new MutationObserver(update).observe(output,{childList:true,characterData:true,subtree:true});button.addEventListener('click',async()=>{exporting=true;update();message.textContent='Choose where to save…';try{message.textContent=await window.sensePilot.exportText(kind,output.textContent)?'File saved.':'Export cancelled.';}catch{message.textContent='Unable to save file.';}finally{exporting=false;update();}});update();}
+const theme=el('theme-toggle');theme.addEventListener('click',()=>{const light=document.body.classList.toggle('light');theme.textContent=light?'Dark theme':'Light theme';theme.setAttribute('aria-pressed',String(light));});
