@@ -4,12 +4,13 @@ export function validatePrompt(value) {
 }
 
 export async function summarizeNotes(notes, { consent = false, signal } = {}) {
-  if (!consent) throw new Error('Meeting participant consent required');
+  if (consent !== true) throw new Error('Meeting participant consent required');
   const prompt = validatePrompt(notes);
   const response = await fetch('http://127.0.0.1:11434/api/chat', {
     method: 'POST',
+    redirect: 'error',
     headers: { 'Content-Type': 'application/json' },
-    signal: signal ?? AbortSignal.timeout(60000),
+    signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(60000)]) : AbortSignal.timeout(60000),
     body: JSON.stringify({model:'qwen2.5:3b',stream:false,messages:[
       {role:'system',content:'Summarize the supplied meeting notes. Identify decisions and action items. Do not invent details.'},
       {role:'user',content:prompt}
