@@ -43,3 +43,13 @@ ipcMain.handle('runtime:check',async(event)=>{
  if(!healthPending)healthPending=require('./health.cjs').checkRuntime().finally(()=>{healthPending=null;});
  return await healthPending;
 });
+
+let saving=false;
+ipcMain.handle('notes:export',async(event,payload)=>{
+ if(!win||event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)throw Error('Unauthorized sender');
+ if(typeof payload?.text!=='string'||!payload.text.trim()||Buffer.byteLength(payload.text,'utf8')>8*1024*1024)throw Error('Invalid export');
+ const names={summary:'meeting-summary',analysis:'file-analysis'};
+ if(!Object.hasOwn(names,payload.kind)||saving)throw Error('Invalid or concurrent export');
+ saving=true;
+ try{const choice=await dialog.showSaveDialog(win,{defaultPath:names[payload.kind]+'.txt',filters:[{name:'Text document',extensions:['txt']}]});if(choice.canceled||!choice.filePath)return false;await require('node:fs/promises').writeFile(choice.filePath,payload.text,{encoding:'utf8'});return true;}finally{saving=false;}
+});
