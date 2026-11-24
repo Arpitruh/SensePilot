@@ -1,4 +1,4 @@
-const {app,BrowserWindow,ipcMain}=require('electron');
+const {app,BrowserWindow,ipcMain,dialog}=require('electron');
 const path=require('node:path');
 let win;
 let busy=false;
@@ -19,3 +19,20 @@ ipcMain.handle('notes:summarize',async(event,payload)=>{
 });
 app.whenReady().then(()=>{createWindow();app.on('activate',()=>{if(BrowserWindow.getAllWindows().length===0)createWindow();});});
 app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit();});
+
+ipcMain.handle('files:process',async(event,payload)=>{
+ if(!win||event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)throw Error('Unauthorized sender');
+ if(payload?.consent!==true)throw Error('Permission required');
+ if(!['audio','image'].includes(payload.kind))throw Error('Invalid file type');
+ if(busy)throw Error('Another task is running');
+ busy=true;
+ try{
+ const audio=payload.kind==='audio';
+ const selection=await dialog.showOpenDialog(win,{properties:['openFile'],filters:[{name:audio?'Audio':'Images',extensions:audio?['wav','mp3','m4a','flac','ogg']:['png','jpg','jpeg']}]});
+ if(selection.canceled)return null;
+ const file=selection.filePaths[0];
+ if(audio)return await require('./file-processing.cjs').transcribe(file);
+ const {analyzeImage}=await import('./image-analysis.js');
+ return await analyzeImage(file,{consent:true});
+ }finally{busy=false;}
+});
