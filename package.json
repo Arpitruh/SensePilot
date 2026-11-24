@@ -6,7 +6,7 @@
   "scripts": {
     "test": "node --test",
     "start": "electron .",
-    "check": "node --check src/main.cjs && node --check src/preload.cjs && node --check src/ui/renderer.js"
+    "check": "node --check src/main.cjs && node --check src/preload.cjs && node --check src/ui/renderer.js && node --check src/file-processing.cjs && node --check src/image-analysis.js"
   },
   "engines": {
     "node": ">=22"
