@@ -12,3 +12,15 @@ function refreshFiles(){audioFile.disabled=imageFile.disabled=fileBusy||!fileCon
 fileConsent.addEventListener('change',refreshFiles);
 async function processFile(kind){if(fileBusy||!fileConsent.checked)return;fileBusy=true;refreshFiles();fileStatus.textContent='Choose a file to process locally…';fileResult.textContent='';try{const output=await window.sensePilot.processFile(kind,true);fileStatus.textContent=output===null?'Selection cancelled.':'Processing complete.';if(output!==null)fileResult.textContent=output;}catch{fileStatus.textContent='Processing failed. Check Python, Whisper or Ollama installation and file format.';}finally{fileBusy=false;refreshFiles();}}
 audioFile.addEventListener('click',()=>processFile('audio'));imageFile.addEventListener('click',()=>processFile('image'));refreshFiles();
+
+const runtimeCheck=el('runtime-check'),runtimeStatus=el('runtime-status'),runtimeResults=el('runtime-results');
+let runtimeBusy=false;
+async function checkRuntime(){
+ if(runtimeBusy)return;
+ runtimeBusy=true;runtimeCheck.disabled=true;runtimeStatus.textContent='Checking local dependencies…';runtimeResults.replaceChildren();
+ try{const state=await window.sensePilot.checkRuntime();const fields=[['python','Python'],['whisper','Faster Whisper'],['ollama','Ollama'],['textModel','Qwen 2.5 3B'],['visionModel','Gemma 3 4B']];
+ for(const [key,label] of fields){const item=document.createElement('li');item.textContent=label+': '+(state[key]===true?'Ready':'Not detected');runtimeResults.append(item);}
+ runtimeStatus.textContent=fields.every(([key])=>state[key]===true)?'All dependency checks passed.':'Some dependencies need setup. See installation instructions below.';
+ }catch{runtimeStatus.textContent='Dependency check failed. Try again.';}finally{runtimeBusy=false;runtimeCheck.disabled=false;}
+}
+runtimeCheck.addEventListener('click',checkRuntime);checkRuntime();
