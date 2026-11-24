@@ -48,3 +48,8 @@ const toast=el('toast');let toastTimer;
 function notify(message){clearTimeout(toastTimer);toast.textContent=message;toast.hidden=false;toastTimer=setTimeout(()=>{toast.hidden=true;},4500);}
 for(const id of ['status','file-status','export-summary-status','export-analysis-status','history-status']){const node=el(id);new MutationObserver(()=>{const message=node.textContent.trim();if(/ready\.$|complete\.$|saved|cleared|failed|unable|could not/i.test(message))notify(message);}).observe(node,{childList:true,characterData:true,subtree:true});}
 document.addEventListener('keydown',event=>{if(!event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||event.repeat)return;const page={'1':'dashboard','2':'history','3':'settings'}[event.key];if(page){event.preventDefault();showPage(page);document.querySelector('[data-page="'+page+'"]').focus();}});
+
+const glassTheme=el('glass-theme');
+glassTheme.checked=store.get('sp-glass-theme',false)===true;
+document.body.classList.toggle('glass',glassTheme.checked);
+glassTheme.addEventListener('change',()=>{document.body.classList.toggle('glass',glassTheme.checked);store.set('sp-glass-theme',glassTheme.checked);});
