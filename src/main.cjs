@@ -36,3 +36,10 @@ ipcMain.handle('files:process',async(event,payload)=>{
  return await analyzeImage(file,{consent:true});
  }finally{busy=false;}
 });
+
+let healthPending=null;
+ipcMain.handle('runtime:check',async(event)=>{
+ if(!win||event.sender!==win.webContents||event.senderFrame!==win.webContents.mainFrame)throw Error('Unauthorized sender');
+ if(!healthPending)healthPending=require('./health.cjs').checkRuntime().finally(()=>{healthPending=null;});
+ return await healthPending;
+});
