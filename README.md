@@ -1,7 +1,5 @@
 # SensePilot
 
-Hear. See. Understand. Assist.
-
 A local-first desktop meeting assistant for Windows and macOS, designed for consent-based transcription, screen analysis and meeting notes.
 
 ## Development
